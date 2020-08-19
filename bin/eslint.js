@@ -20,6 +20,22 @@ const binPath = require("../lib/get-local-eslint")(cwd) || require("../lib/get-b
 
 if (binPath !== null) {
     require(binPath);
+} else if (process.argv.includes("--use-global-fallback")) {
+    try {
+        // eslint do not accept --use-global-fallback
+        process.argv.splice(process.argv.indexOf("--use-global-fallback"), 1);
+        // eslint-disable-next-line node/no-unpublished-require
+        require("eslint/bin/eslint");
+    } catch (err) {
+        if ((err && err.code) !== "MODULE_NOT_FOUND") {
+            throw err;
+        }
+        // eslint-disable-next-line no-console
+        console.error(`
+Could not find local and global ESLint.
+Please install ESLint by 'npm install --save-dev eslint'.
+`);
+    }
 } else {
     // eslint-disable-next-line no-console
     console.error(`
